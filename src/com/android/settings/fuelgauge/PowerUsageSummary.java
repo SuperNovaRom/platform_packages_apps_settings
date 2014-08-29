@@ -18,6 +18,7 @@ package com.android.settings.fuelgauge;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -31,10 +32,13 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 
 import com.android.internal.os.PowerProfile;
 import com.android.settings.HelpUtils;
@@ -58,6 +62,7 @@ public class PowerUsageSummary extends PreferenceFragment {
     private static final int MENU_STATS_TYPE = Menu.FIRST;
     private static final int MENU_STATS_REFRESH = Menu.FIRST + 1;
     private static final int MENU_HELP = Menu.FIRST + 2;
+    private static final int MENU_SETTINGS = Menu.FIRST + 3;
 
     private PreferenceGroup mAppListGroup;
     private Preference mBatteryStatusPref;
@@ -155,11 +160,17 @@ public class PowerUsageSummary extends PreferenceFragment {
                     .setIcon(com.android.internal.R.drawable.ic_menu_info_details)
                     .setAlphabeticShortcut('t');
         }
-        MenuItem refresh = menu.add(0, MENU_STATS_REFRESH, 0, R.string.menu_stats_refresh)
+        MenuItem refresh = menu.add(0, MENU_STATS_REFRESH, 1, R.string.menu_stats_refresh)
                 .setIcon(R.drawable.ic_menu_refresh_holo_dark)
                 .setAlphabeticShortcut('r');
         refresh.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM |
                 MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+        
+        MenuItem showBatteryPercent = menu.add(0, MENU_SETTINGS, 0, R.string.battery_percent);
+        showBatteryPercent.setCheckable(true);
+        showBatteryPercent.setChecked(Settings.System.getInt(
+                getActivity().getContentResolver(), Settings.System.SHOW_BATTERY_PERCENT, 1) == 0 ? 
+                		false : true);
 
         String helpUrl;
         if (!TextUtils.isEmpty(helpUrl = getResources().getString(R.string.help_url_battery))) {
@@ -182,6 +193,17 @@ public class PowerUsageSummary extends PreferenceFragment {
             case MENU_STATS_REFRESH:
                 mStatsHelper.clearStats();
                 refreshStats();
+                return true;
+            case MENU_SETTINGS:
+                if(item.isChecked()) {
+                	item.setChecked(false);
+                	Settings.System.putInt(getActivity().getContentResolver(),
+                			Settings.System.SHOW_BATTERY_PERCENT, 0);
+                } else {
+                	item.setChecked(true);
+                	Settings.System.putInt(getActivity().getContentResolver(),
+                			Settings.System.SHOW_BATTERY_PERCENT, 1);
+                }
                 return true;
             default:
                 return false;
