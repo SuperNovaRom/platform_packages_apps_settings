@@ -23,6 +23,9 @@ public class SystemSettings extends SettingsPreferenceFragment implements OnPref
     private static final String KEY_VOLUME_WAKE = "pref_volume_wake";
     private static final String KEY_VOLBTN_MUSIC_CTRL = "volbtn_music_controls";
     private static final String KEY_SAFE_HEADSET_VOLUME = "safe_headset_volume";
+   	
+    // Navigation Bar
+    private static final String KEY_NAVIGATION_BAR_HEIGHT = "navigation_bar_height";
 
     // Volume Rocker
     private CheckBoxPreference mVolumeAdjustSounds;
@@ -31,6 +34,9 @@ public class SystemSettings extends SettingsPreferenceFragment implements OnPref
     private CheckBoxPreference mVolumeWake;
     private CheckBoxPreference mVolBtnMusicCtrl;
     private CheckBoxPreference mSafeHeadsetVolume;
+
+    // Navigation Bar	
+    private ListPreference mNavigationBarHeight;    
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +88,16 @@ public class SystemSettings extends SettingsPreferenceFragment implements OnPref
         mSafeHeadsetVolume.setChecked(Settings.System.getInt(getActivity().getContentResolver(),
                 Settings.System.SAFE_HEADSET_VOLUME, safeMediaVolumeEnabled ? 1 : 0) != 0);
 	
+	// NAVIGATION BAR
+
+	// navigation bar height
+	mNavigationBarHeight = (ListPreference) findPreference(KEY_NAVIGATION_BAR_HEIGHT);
+        mNavigationBarHeight.setOnPreferenceChangeListener(this);
+        int statusNavigationBarHeight = Settings.System.getInt(getActivity().getApplicationContext()
+                .getContentResolver(),
+                Settings.System.NAVIGATION_BAR_HEIGHT, 48);
+        mNavigationBarHeight.setValue(String.valueOf(statusNavigationBarHeight));
+        mNavigationBarHeight.setSummary(mNavigationBarHeight.getEntry());
     }
     
     @Override
@@ -127,6 +143,12 @@ public class SystemSettings extends SettingsPreferenceFragment implements OnPref
             int index = mVolumeKeyCursorControl.findIndexOfValue(volumeKeyCursorControl);
             mVolumeKeyCursorControl.setSummary(mVolumeKeyCursorControl.getEntries()[index]);
             return true;
+        } else if (preference == mNavigationBarHeight) {
+            int statusNavigationBarHeight = Integer.valueOf((String) objValue);
+            int index = mNavigationBarHeight.findIndexOfValue((String) objValue);
+            Settings.System.putInt(getActivity().getApplicationContext().getContentResolver(),
+                    Settings.System.NAVIGATION_BAR_HEIGHT, statusNavigationBarHeight);
+            mNavigationBarHeight.setSummary(mNavigationBarHeight.getEntries()[index]);
         }
         return true;
     }
